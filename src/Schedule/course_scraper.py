@@ -1,6 +1,6 @@
 ## AUTHOR: WILLIAM PONCZAK
 ## DATE: 1/8/25
-## VERSION: 1.1
+## VERSION: 2.1
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,37 +17,29 @@ soup = BeautifulSoup(base_url.content, 'html.parser')
 # Find all of the 'td' tags:
 tds = soup.find_all('td')
 
-
-
 data = []
-count = 1
-
-def __init__(self, courseID, url):
-    self.courseID = courseID
-    self.url = url
-
 
 def find_prerequisites(courseID):
     pass
 
-def next_page():
+def get_next_page_url():
     count += 1
     insert = str(count)
     result = f"https://catalog.jmu.edu/content.php?catoid=54&catoid=54&navoid=2887&filter%5Bitem_type%5D=3&filter%5Bonly_active%5D=1&filter%5B3%5D=1&filter%5Bcpage%5D={insert}#acalog_template_course_filter"
     return result
 
-
-def update_CSV():
-    with open('JMU_Prerequisite_dataset.csv', 'w', newline="") as file:
+#Update method to use pandas
+def update_CSV(from_filename, to_filename):
+    with open(from_filename, 'w', newline="") as file:
         writer = csv.writer(file, quoting=csv.QUOTE_NONE)
         writer.writerows(data)
 
-    df = pd.read_csv('JMU_Prerequisite_dataset.csv', sep="\t or .")
+    df = pd.read_csv(from_filename, sep="\t or .")
     df.drop_duplicates(subset=None, inplace=True)
-    df.to_csv('JMU_Prereq_No_Dupes', index=False)       
+    df.to_csv(to_filename, index=False)       
 
-
-def getTitle():
+def extract_course_title(tds):
+    titles = []
     # Getting the title of the course
     for td in tds:
         # Find all the tags with a
@@ -55,18 +47,20 @@ def getTitle():
         for aTag in aTags:
             # Get all of the title attributes
             title = aTag.get('title')
-
-            #Some titles were None or not course names. Only and all course names have '.'
-            if (title != None):
-                if '.' in title:
-                    #print("Title: ", title.removesuffix('   opens a new window'))
-                    title_data = [title.removesuffix('   opens a new window')]
-                    data.append(title_data)
-    
-
+            if title:
+                titles.append(title)
+    return titles
+        
 def get_href():
     pass
 
-
 def get_courseID():
     pass
+
+def append_title_to_data(title):
+    #Some titles were None or not course names. Only and all course names have '.'
+    if (title != None):
+        if '.' in title:
+            #print("Title: ", title.removesuffix('   opens a new window'))
+            title_data = [title.removesuffix('   opens a new window')]
+            data.append(title_data)
